@@ -168,7 +168,7 @@
       <div class="bin" data-type="plastic">🧴 Plastic</div>
       <div class="bin" data-type="organic">🍌 Organic</div>
       <div class="bin" data-type="paper">📄 Paper</div>
-      <div class="bin" data-type="metal">🪙 Metal</div>
+      <div class="bin" data-type="metal">🔩 Metal</div>
     </div>
     <div class="game-area" id="gameArea"></div>
   </div>
@@ -209,55 +209,62 @@
       spawnWaste();
     }
 
-    function spawnWaste() {
-      const types = ['plastic', 'organic', 'paper', 'metal'];
-      const icons = {
-        plastic: '🧴',
-        organic: '🍌',
-        paper: '📄',
-        metal: '🪙'
-      };
+     function spawnWaste() {
+    const types = ['plastic', 'organic', 'paper', 'metal'];
+    const icons = {
+        plastic: ['🧴', '🥤'],   // Use an array for icons
+        organic: ['🍌', '🥗'],   // Use an array for icons
+        paper: ['📄', '📚'],     // Use an array for icons
+        metal: ['🔩', '⚙️']      // Use an array for icons
+    };
 
-      const waste = document.createElement('div');
-      const type = types[Math.floor(Math.random() * types.length)];
-      waste.classList.add('waste');
-      waste.setAttribute('draggable', true);
-      waste.setAttribute('data-type', type);
-      waste.innerText = icons[type];
+    const waste = document.createElement('div');
+    const type = types[Math.floor(Math.random() * types.length)];
+    // Pick a random icon from the array corresponding to the waste type
+    const icon = icons[type][Math.floor(Math.random() * icons[type].length)];
 
-      waste.style.top = Math.random() * 200 + 'px';
-      waste.style.left = Math.random() * 300 + 'px';
+    waste.classList.add('waste');
+    waste.setAttribute('draggable', true);
+    waste.setAttribute('data-type', type);
+    waste.innerText = icon;
 
-      waste.addEventListener('dragstart', (e) => {
+    waste.style.top = Math.random() * 200 + 'px';
+    waste.style.left = Math.random() * 300 + 'px';
+
+    waste.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', type);
-      });
+    });
 
-      gameArea.appendChild(waste);
-      setTimeout(() => {
+    gameArea.appendChild(waste);
+    setTimeout(() => {
         if (waste.parentElement) waste.remove();
-      }, 6000);
+    }, 6000);
 
-      if (timer > 0) setTimeout(spawnWaste, 1000);
+    if (timer > 0) setTimeout(spawnWaste, 1000);
+}
+
+     document.querySelectorAll('.bin').forEach(bin => {
+  bin.addEventListener('dragover', e => e.preventDefault());
+  bin.addEventListener('drop', e => {
+    const draggedType = e.dataTransfer.getData('text/plain');
+    const correctType = bin.getAttribute('data-type');
+    const waste = document.querySelector(`.waste[data-type="${draggedType}"]`);
+
+    if (draggedType === correctType) {
+      score += 10;
+      bin.style.background = '#c8e6c9';
+
+      // Remove the waste element from the game area after it is placed in the correct bin
+      if (waste) waste.remove();
+    } else {
+      score -= 5;
+      bin.style.background = '#ffcdd2';
     }
 
-    document.querySelectorAll('.bin').forEach(bin => {
-      bin.addEventListener('dragover', e => e.preventDefault());
-      bin.addEventListener('drop', e => {
-        const draggedType = e.dataTransfer.getData('text/plain');
-        const correctType = bin.getAttribute('data-type');
-
-        if (draggedType === correctType) {
-          score += 10;
-          bin.style.background = '#c8e6c9';
-        } else {
-          score -= 5;
-          bin.style.background = '#ffcdd2';
-        }
-
-        updateScore();
-        setTimeout(() => bin.style.background = '', 500);
-      });
-    });
+    updateScore();
+    setTimeout(() => bin.style.background = '', 500);
+  });
+});
 
     function updateScore() {
       scoreDisplay.textContent = score;
